@@ -1,0 +1,258 @@
+<template>
+  <div class="data-table-container">
+    <DataTable
+      :value="bugs"
+      class="p-datatable-bugs"
+      :paginator="true"
+      :rows="10"
+      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+      :rowsPerPageOptions="[10]"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    >
+      <Column field="title" header="Bug Title"></Column>
+      <Column field="status" header="Bug Status">
+        <template #body="slotProps">
+          <span :class="statusClass(slotProps.data.status)">{{
+            slotProps.data.status
+          }}</span>
+        </template>
+      </Column>
+      <Column field="reported_by" header="Reported By"></Column>
+      <Column field="assigned_to" header="Assigned To"></Column>
+    </DataTable>
+  </div>
+</template>
+
+<script>
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import BugsServices from "@/services/bugs/bugs";
+export default {
+  components: {
+    DataTable,
+    Column,
+  },
+  created(){
+     const response = BugsServices.getBugsByProjectId(51,SortOrder,Limi, offset)
+
+  },
+  data() {
+    return {
+      bugs: [
+        {
+          bug_id: 1,
+          title: "Login Bug",
+          status: "new",
+          reported_by: "Alice",
+          assigned_to: "Bob",
+        },
+        {
+          bug_id: 2,
+          title: "UI Glitch",
+          status: "started",
+          reported_by: "Bob",
+          assigned_to: "Charlie",
+        },
+        {
+          bug_id: 3,
+          title: "Performance Issue",
+          status: "completed",
+          reported_by: "Charlie",
+          assigned_to: "Dave",
+        },
+        {
+          bug_id: 4,
+          title: "Missing Icons",
+          status: "resolved",
+          reported_by: "Dave",
+          assigned_to: "Eve",
+        },
+      ],
+    };
+  },
+  methods: {
+    statusClass(status) {
+      switch (status) {
+        case "new":
+          return "status-new";
+        case "started":
+          return "status-started";
+        case "completed":
+          return "status-completed";
+        case "resolved":
+          return "status-resolved";
+        default:
+          return "";
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.data-table-container {
+  max-width: 90%;
+  margin: 20px auto;
+}
+
+:deep(.p-datatable .p-datatable-tbody > tr > td) {
+  border-right: 1px solid #eee; 
+}
+
+.status-new {
+  background-color: red;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.status-started {
+  background-color: rgb(226, 226, 88);
+  color: black;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.status-completed,
+.status-resolved {
+  background-color: rgb(100, 206, 100);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+:deep(.p-paginator) {
+  .p-paginator-current {
+    margin-left: auto;
+  }
+}
+
+:deep(.p-datatable.p-datatable-bugs) {
+  .p-datatable-header {
+    color: #007bff; 
+    background-color: #f4f4f4; 
+    font-weight: bold; 
+  }
+  :deep(.p-datatable.p-datatable-bugs .p-datatable-thead > tr > th) {
+    background-color: #f4f4f4; 
+    color: #007bff; 
+    font-weight: bold; 
+    padding: 10px; 
+    text-align: left; 
+  }
+  .p-paginator {
+    padding: 1rem;
+  }
+
+  .p-datatable-thead > tr > th {
+    text-align: left;
+  }
+
+  .p-datatable-tbody > tr > td {
+    cursor: auto;
+  }
+}
+</style>
+
+
+
+
+
+In this code
+
+I want that when this page loads it will recieve the props of project_id and then i will retreive all the bugs related to that project_id
+will be fetched from UserServices function
+User Services will return response in this form
+data
+: 
+Array(9)
+0
+: 
+{bug_id: 5, title: 'UI alignment issue', project_id: 51, description: 'Fix the alignment issues on the main page.', deadline: '2024-08-20T00:00:00.000Z', …}
+1
+: 
+{bug_id: 9, title: 'Security vulnerability in authentication', project_id: 51, description: 'Fix security flaw in the authentication process.', deadline: '2024-08-22T00:00:00.000Z', …}
+2
+: 
+{bug_id: 8, title: 'Search feature enhancement', project_id: 51, description: 'Improve search feature with advanced filters.', deadline: '2024-08-18T00:00:00.000Z', …}
+3
+: 
+{bug_id: 6, title: 'Performance optimization', project_id: 51, description: 'Optimize the database queries for faster response.', deadline: '2024-08-25T00:00:00.000Z', …}
+4
+: 
+{bug_id: 11, title: 'Notification system upgrade', project_id: 51, description: 'Enhance notification system for better UX.', deadline: '2024-08-30T00:00:00.000Z', …}
+5
+: 
+{bug_id: 4, title: 'Feature request for dashboard', project_id: 51, description: 'Add analytics dashboard to show user data.', deadline: '2024-08-15T00:00:00.000Z', …}
+6
+: 
+{bug_id: 7, title: 'Crash on file upload', project_id: 51, description: 'Application crashes on large file uploads.', deadline: '2024-08-12T00:00:00.000Z', …}
+7
+: 
+{bug_id: 3, title: 'Bug in login', project_id: 51, description: 'Fix the login bug that prevents user authentication.', deadline: '2024-08-10T00:00:00.000Z', …}
+8
+: 
+{bug_id: 10, title: 'API response delay', project_id: 51, description: 'API responses are slow under heavy load.', deadline: '2024-08-28T00:00:00.000Z', …}
+length
+: 
+9
+[[Prototype]]v-if="userdata === 'MANAGER'"
+: 
+Array(0)
+totalItems
+: 
+9
+totalPages
+: 
+1
+
+
+created(){
+      this.userdata = Utilities.getuserInfo()
+      this.userdata = this.userdata.toUpperCase()
+  },
+
+v-if="userdata === 'MANAGER'"
+
+
+Make this according to that it also maintain the pagination
+on each time pagination page move it will call api again by giving offset
+
+
+
+
+
+
+
+bugs: [
+        {
+          bug_id: 1,
+          title: "Login Bug",
+          status: "new",
+          reported_by: "Alice",
+          assigned_to: "Bob",
+        },
+        {
+          bug_id: 2,
+          title: "UI Glitch",
+          status: "started",
+          reported_by: "Bob",
+          assigned_to: "Charlie",
+        },
+        {
+          bug_id: 3,
+          title: "Performance Issue",
+          status: "completed",
+          reported_by: "Charlie",
+          assigned_to: "Dave",
+        },
+        {
+          bug_id: 4,
+          title: "Missing Icons",
+          status: "resolved",
+          reported_by: "Dave",
+          assigned_to: "Eve",
+        },
+      ],
+    };
+  }

@@ -9,7 +9,7 @@
 
 <script>
 import SignUpForm from "@/components/SignUpForm.vue";
-import UserTypeLeftScreen from "@/components/UserTypeLeftScreen.vue";
+import UserTypeLeftScreen from "@/components/UserTypeBackground.vue";
 import UserServices from "@/services/User/User";
 
 export default {

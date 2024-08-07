@@ -1,13 +1,15 @@
 <template>
   <div>
+    <Toast position="top-right" />
     <UserTypeLeftScreen></UserTypeLeftScreen>
-
     <LoginForm></LoginForm>
   </div>
 </template>
+
 <script>
-import UserTypeLeftScreen from "@/components/UserTypeLeftScreen.vue";
+import UserTypeLeftScreen from "@/components/UserTypeBackground.vue";
 import LoginForm from "@/components/LoginForm.vue";
+import Toast from 'primevue/toast';
 
 export default {
   data() {
@@ -15,15 +17,25 @@ export default {
       username: "",
       password: "",
       error: "",
+      message: ""
     };
+  },
+  created() {
+    const redirectMessage = localStorage.getItem('redirectMessage');
+    if (redirectMessage) {
+      this.$toast.add({ severity: 'error', summary: 'Error', detail: redirectMessage, life: 2000 });
+      localStorage.removeItem('redirectMessage'); // Clear the message after displaying it
+    }
   },
   components: {
     UserTypeLeftScreen,
     LoginForm,
+    Toast,
   },
   methods: {},
 };
 </script>
+
 <style scoped>
 * {
   font-family: "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell,

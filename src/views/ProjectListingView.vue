@@ -5,14 +5,19 @@
       @search-term="onSearchTerm"
       @sort-by="onSortBy"
     ></ProjectHeaders>
-    <ProjectCards :projects="projects" />
+    <div v-if="errorMessage" class="no-projects-message">
+      <p>{{ errorMessage }}</p>
+    </div>
+    <ProjectCards v-if="projects.length > 0" :projects="projects" />
     <Paginator
+      v-if="projects.length > 0"
       :rows="perPage"
       :totalRecords="totalItemsCount"
       @page="onPageChange"
     ></Paginator>
   </div>
 </template>
+
 <script>
 import Navigationbar from "@/components/NavigationCompbar.vue";
 import ProjectCards from "@/components/ProjectCards.vue";
@@ -35,6 +40,7 @@ export default {
       perPage: 6,
       searchTerm: "",
       sortOrder: "",
+      errorMessage: "No Projects", // Add an error message state
     };
   },
   created() {
@@ -43,11 +49,13 @@ export default {
   methods: {
     async fetchProjects() {
       try {
-        console.log("Fetching projects...");
         let response;
         if (this.searchTerm) {
-          response = await ProjectServices.getProjectsByName(
-            this.searchTerm,
+          response = await ProjectServices.getAllProjects(
+            this.currentPage,
+            this.perPage,
+            this.sortOrder,
+            this.searchTerm // Pass the search term
           );
         } else {
           response = await ProjectServices.getAllProjects(
@@ -56,7 +64,8 @@ export default {
             this.sortOrder
           );
         }
-        if (response.data) {
+
+        if (response.data.length > 0) {
           this.projects = response.data.map((project) => ({
             id: project.project_id,
             title: project.name,
@@ -64,10 +73,16 @@ export default {
             manager_id: project.manager_id,
           }));
           this.totalItemsCount = response.totalItems;
+          this.errorMessage = ""; // Clear error message if projects are found
           await this.appendTaskDataToProjects();
+        } else {
+          this.errorMessage = response.message || "No matching Project Found";
+          this.projects = [];
+          this.totalItemsCount = 0;
         }
       } catch (error) {
         console.error("Error fetching projects:", error);
+        this.errorMessage = "Failed to fetch projects. Please try again.";
         this.projects = [];
       }
     },
@@ -81,10 +96,10 @@ export default {
         };
       }));
       this.projects = projectsWithTasks;
-      console.log("Projects with tasks data:", this.projects);
     },
     onSearchTerm(searchTerm) {
       this.searchTerm = searchTerm;
+      this.currentPage = 1; // Reset to first page for new search
       this.fetchProjects();
     },
     onSortBy(sortOrder) {
@@ -99,9 +114,16 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .projects {
   background-color: rgb(253, 252, 252);
+}
+
+.no-projects-message {
+  text-align: center;
+  font-size: 24px;
+  color: #666;
+  padding: 20px;
+  margin-top: 20%;
 }
 </style>

@@ -1,81 +1,64 @@
 <template>
   <div class="create-account">
-    <h2>ADD NEW PROJECT</h2>
-    <hr />
     <form @submit.prevent="submitForm">
-      <div class="form-group">
-        <label for="projectName">Project Name</label>
-        <input
-          type="text"
-          id="projectName"
-          v-model="projectName"
-          placeholder="Enter project name"
-        />
-        <span v-if="errors.projectName" class="error">{{ errors.projectName }}</span>
+      <div class="form-content">
+        <div class="form-left">
+          <div class="form-group">
+            <label for="projectName">Project Name</label>
+            <input
+              type="text"
+              id="projectName"
+              v-model="projectName"
+              placeholder="Enter project name"
+            />
+            <span v-if="errors.projectName" class="error">{{ errors.projectName }}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="projectDesc">Project Description</label>
+            <input
+              type="text"
+              id="projectDesc"
+              v-model="projectDesc"
+              placeholder="Enter project description"
+            />
+            <span v-if="errors.projectDesc" class="error">{{ errors.projectDesc }}</span>
+          </div>
+        </div>
+
+        <div class="form-right">
+          <div class="form-group image-upload">
+            <label for="imageUpload" class="upload-label">
+              <input
+                type="file"
+                id="imageUpload"
+                @change="onFileChange"
+                accept="image/*"
+              />
+              <span>Upload project photo</span>
+            </label>
+            <span v-if="errors.image" class="error">{{ errors.image }}</span>
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="projectDesc">Project Description</label>
-        <input
-          type="text"
-          id="projectDesc"
-          v-model="projectDesc"
-          placeholder="Enter project description"
-        />
-        <span v-if="errors.projectDesc" class="error">{{ errors.projectDesc }}</span>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add</button>
+        <button type="button" class="btn btn-secondary" @click="$emit('close')">Cancel</button>
       </div>
-
-      <div class="form-group">
-        <label for="image">Image</label>
-        <input
-          type="file"
-          id="image"
-          @change="onFileChange"
-          accept="image/*"
-        />
-        <span v-if="errors.image" class="error">{{ errors.image }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="assignedQa">Assign QA</label>
-        <input
-          type="number"
-          id="assignedQa"
-          v-model="assignedQa"
-          placeholder="Enter QA ID"
-        />
-        <span v-if="errors.assignedQa" class="error">{{ errors.assignedQa }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="assignedDev">Assign Developer</label>
-        <input
-          type="number"
-          id="assignedDev"
-          v-model="assignedDev"
-          placeholder="Enter Developer ID"
-        />
-        <span v-if="errors.assignedDev" class="error">{{ errors.assignedDev }}</span>
-      </div>
-
-      <hr />
-
-      <button type="submit" class="btn btn-primary">Create Project</button>
     </form>
   </div>
 </template>
 
 <script>
-import ProjectServices from "@/services/Project/Project";
-
+import ProjectServices from '@/services/Project/Project';
 export default {
   data() {
     return {
       projectName: "",
       projectDesc: "",
+      
       image: null,
-      assignedQa: "",
-      assignedDev: "",
       errors: {},
     };
   },
@@ -89,17 +72,6 @@ export default {
         this.errors.projectName = "Project Name must be less than 255 characters.";
       }
 
-      if (!this.projectDesc) {
-        this.errors.projectDesc = "Project Description is required.";
-      }
-
-      if (!this.assignedQa) {
-        this.errors.assignedQa = "Assign QA is required.";
-      }
-
-      if (!this.assignedDev) {
-        this.errors.assignedDev = "Assign Developer is required.";
-      }
 
       return Object.keys(this.errors).length === 0;
     },
@@ -111,18 +83,19 @@ export default {
         try {
           const projectData = {
             name: this.projectName,
-            description: this.projectDesc,
-            dev_ids: [parseInt(this.assignedDev)], 
-            qa_ids: [parseInt(this.assignedQa)], 
+            desc: this.projectDesc,
           };
-          console.log("Before Calling the API", projectData);
           const response = await ProjectServices.createProject(projectData);
           console.log("Project created successfully:", response);
-          alert("Project Created Successfully");
+          this.$toast.add({ severity: 'success', summary: 'Success', detail: 'Project Created Successful!', life: 2000 });
 
           this.resetForm();
         } catch (error) {
-          console.error("Failed to create project:", error);
+          let errorMessage = 'Project Creation failed.';
+          if (error.body.message) {
+            errorMessage = error.body.message || errorMessage;
+          }
+          this.$toast.add({ severity: 'error', summary: 'Error', detail: errorMessage,life: 2000 });
         }
       }
     },
@@ -130,8 +103,6 @@ export default {
       this.projectName = "";
       this.projectDesc = "";
       this.image = null;
-      this.assignedQa = "";
-      this.assignedDev = "";
       this.errors = {};
     },
   },
@@ -140,19 +111,18 @@ export default {
 
 <style scoped>
 .create-account {
-  max-width: 500px;
+  max-width: 800px;
   margin: 2rem auto;
   padding: 2rem;
-  background-color: #f9f9f9;
+  background-color: #fff;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
-  font-size: 28px;
+  font-size: 24px;
   color: #333;
   margin-bottom: 1.5rem;
-  text-align: center;
+  text-align: left;
 }
 
 hr {
@@ -160,6 +130,16 @@ hr {
   border: 0;
   height: 1px;
   background: #e0e0e0;
+}
+
+.form-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-left,
+.form-right {
+  width: 48%;
 }
 
 .form-group {
@@ -174,7 +154,6 @@ label {
 }
 
 input[type="text"],
-input[type="number"],
 input[type="file"] {
   width: 100%;
   padding: 0.75rem;
@@ -184,7 +163,6 @@ input[type="file"] {
 }
 
 input[type="text"]:focus,
-input[type="number"]:focus,
 input[type="file"]:focus {
   border-color: #007bff;
   outline: none;
@@ -197,45 +175,63 @@ input[type="file"]:focus {
   display: block;
 }
 
+.form-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .btn {
   padding: 0.75rem 1.5rem;
   color: #fff;
-  background-color: #8eabca;
+  background-color: #007bff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
-  width: 100%;
   transition: background-color 0.3s ease;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
 }
 
 .btn-primary:hover {
   background-color: #0056b3;
 }
 
-.btn:active {
-  transform: scale(0.98);
+.btn-secondary:hover {
+  background-color: #5a6268;
 }
 
-input[type="text"]::placeholder,
-input[type="number"]::placeholder,
-input[type="file"]::placeholder {
-  color: #aaa;
+.image-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  padding: 1rem;
+  cursor: pointer;
+  text-align: center;
+  height: 100%;
 }
 
-.create-account {
-  animation: fadeInUp 0.5s ease-out;
+.upload-label {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.upload-label span {
+  font-size: 16px;
+  color: #777;
+}
+
+input[type="file"] {
+  display: none;
 }
 </style>

@@ -1,21 +1,24 @@
 <template>
   <div id="app">
+    <Toast position="top-right" />
     <!-- <Navigationbar></Navigationbar> -->
     <router-view></router-view>
   </div>
 </template>
 
 <script>
+import Toast from 'primevue/toast/Toast';
+
 //import Navigationbar from './components/Navigationbar.vue';
 
 export default {
   name: 'App',
   components: {
-    //Navigationbar
+    Toast
   },
   mounted(){
     console.log("Loaded")
-  }
+  },
 }
 </script>
 

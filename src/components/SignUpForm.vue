@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <Toast position="top-right" />
     <div class="form-wrapper">
       <h2>Sign Up</h2>
       <p>Please fill your information below</p>
@@ -12,11 +13,11 @@
       />
       <span v-if="nameError" class="error-message">{{ nameError }}</span>
       <InputValueField
-      v-model="number"
-      type="number"
-      label="Phone Number"
-      iconClass="pi-phone"
-    />
+        v-model="number"
+        type="number"
+        label="Phone Number"
+        iconClass="pi-phone"
+      />
       <InputValueField
         v-model="email"
         label="Email Address"
@@ -35,13 +36,11 @@
       <span v-if="passwordError" class="error-message">{{ passwordError }}</span>
       <Button @click="handleSubmit" class="custom-button">
         <span>Sign Up</span>
-        <!-- Icon using CSS class for alignment -->
         <i class="pi pi-arrow-right" style="margin-left: 5px;"></i>
       </Button>
       <Divider />
-      <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
-      <p v-if="error" class="error-message">{{ error }}</p>
-      <p>Already have an account? <a href="/login">Login to your Account</a>.</p>    </div>
+      <p>Already have an account? <a href="/">Login to your Account</a>.</p>
+    </div>
   </div>
 </template>
 
@@ -51,14 +50,16 @@ import Divider from 'primevue/divider';
 import InputValueField from "./InputValueField.vue";
 import UserServices from "@/services/User/User";
 import Validator from "@/helpers/Validators";
+import Toast from 'primevue/toast';
 
 export default {
   data() {
     return {
       name: "",
+      number: null,
       email: "",
       password: "",
-      userType: "",  // This will now hold the userType passed from the query
+      userType: "",
       error: "",
       successMessage: "",
       nameError: "",
@@ -68,7 +69,6 @@ export default {
   },
   mounted() {
     if (this.$route.query.userType) {
-      console.log("USER TYPE: ",this.$route.query.userType)
       this.userType = this.$route.query.userType;
     }
   },
@@ -76,27 +76,29 @@ export default {
     InputValueField,
     Button,
     Divider,
+    Toast,
   },
   methods: {
     async handleSubmit() {
-      console.log(this.email, this.name, this.userType, this.password); 
       if (this.validateInputs()) {
         try {
           const response = await UserServices.createUser(
             this.name,
-            this.userType,  // Use the userType obtained from the query
+            this.userType,
             this.email,
             this.password
           );
+          console.log(response)
+          this.$toast.add({ severity: 'success', summary: 'Success', detail: 'Signup successful!', life: 2000 });
           this.successMessage = "Signup successful!";
-          console.log(response);
           this.error = "";
           setTimeout(() => this.$router.push({ name: "login" }), 2000);
         } catch (error) {
-          this.error =
-            error.response && error.response.data.message
-            ? error.response.data.message
-            : "Signup failed due to server error.";
+          let errorMessage = 'Sign Up failed.';
+          if (error.body.message) {
+            errorMessage = error.body.message || errorMessage;
+          }
+          this.$toast.add({ severity: 'error', summary: 'Error', detail: errorMessage,life: 2000 });
         }
       }
     },
@@ -109,7 +111,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 .container {
@@ -131,19 +132,6 @@ export default {
 h2 {
   color: black;
 }
-Button {
-  background-color: #2f67e0;
-  width: 40%;
-  height: 70px;
-  padding: 17px;
-  border: #fff;
-  border-radius: 10%;
-  border-color: #141414;
-  text-align: left;
-  font-family: inter;
-  font-size: 20px;
-  font-weight: bold;
-}
 .error-message {
   color: red;
   font-size: 0.8rem;
@@ -159,21 +147,29 @@ Button {
 }
 .custom-button {
   display: flex;
-  align-items: left;
-  justify-content: left;
-  background-color: #007BFF;
+  align-items: center;
+  justify-content: center;
+  background-color: #007bff;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 10px 40px;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 16px; 
+  font-size: 16px;
+  background-color: #2f67e0;
+  width: 33%;
+  height: 70px;
+  padding: 17px;
+  border: none;
+  border-radius: 10px;
+  text-align: left;
+  font-family: inter;
+  font-size: 20px;
+  font-weight: bold;
+  
 }
 
 .custom-button i {
-  font-size: 20px; 
-  justify-content: right;
-  align-items: right;
-
+  font-size: 20px;
 }
 </style>

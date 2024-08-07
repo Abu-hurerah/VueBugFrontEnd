@@ -7,7 +7,8 @@
       :rows="10"
       paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
       :rowsPerPageOptions="[10]"
-      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    >
       <Column field="title" header="Bug Details"></Column>
       <Column field="status" header="Status">
         <template #body="slotProps">
@@ -20,15 +21,27 @@
       <Column field="assigned_to" header="Assigned To"></Column>
       <Column field="avatar" header="Avatar">
         <template #body="">
-          <img src="@/assets/Images/avatarstatic2.png" alt="Avatar" class="avatar"/>
+          <img
+            src="@/assets/Images/avatarstatic2.png"
+            alt="Avatar"
+            class="avatar"
+          />
         </template>
       </Column>
-      <Column header="Actions" style="width: 10rem;">
+      <Column header="Actions" style="width: 10rem">
         <template #body="slotProps">
-          <Button type="button" @click="toggleMenu(slotProps.data.bug_id)" class="custom-button">
+          <Button
+            type="button"
+            @click="toggleMenu(slotProps.data.bug_id)"
+            class="custom-button"
+          >
             <span class="pi pi-ellipsis-v"></span>
           </Button>
-          <Menu :model="createMenuItems(slotProps.data)" :popup="true" :visible.sync="visibleMenu[slotProps.data.bug_id]" />
+          <Menu
+            :model="createMenuItems(slotProps.data)"
+            :popup="true"
+            :visible.sync="visibleMenu[slotProps.data.bug_id]"
+          />
         </template>
       </Column>
     </DataTable>
@@ -56,8 +69,24 @@ export default {
   data() {
     return {
       bugs: [],
+      currentPage: 1,
+      totalItemsCount: 0,
+      perPage: 10,
+      sortOrder: "ASC",
+      errorMessage: "", // Add an error message state
       visibleMenu: {},
     };
+  },
+  watch: {
+    searchterm() {
+      this.fetchBugs();
+    },
+    projectId() {
+      this.fetchBugs();
+    },
+    currentPage() {
+      this.fetchBugs();
+    }
   },
   methods: {
     statusClass(status) {
@@ -69,50 +98,63 @@ export default {
     updateState(bug, newStatus) {
       bug.status = newStatus;
       this.visibleMenu[bug.bug_id] = false; // Hide the menu
-      // You might want to add an API call to update the bug status on the server
       console.log(`Updated bug ${bug.bug_id} to status ${newStatus}`);
     },
     createMenuItems(bug) {
       const statusOptions = ["New", "Started", "Completed", "Resolved"];
-      const statusItems = statusOptions.map(status => ({
+      const statusItems = statusOptions.map((status) => ({
         label: `Set Status to ${status}`,
         icon: "pi pi-fw pi-plus",
-        command: () => this.updateState(bug, status.toLowerCase())
+        command: () => this.updateState(bug, status.toLowerCase()),
       }));
 
       return [
         {
           items: [
             ...statusItems,
-            { 
-              label: "Delete", 
-              icon: "pi pi-fw pi-power-off", 
-              command: () => this.deleteBug(bug) 
+            {
+              label: "Delete",
+              icon: "pi pi-fw pi-power-off",
+              command: () => this.deleteBug(bug),
             },
           ],
-        }
+        },
       ];
     },
-    fetchBugs() {
-      BugsServices.getBugsByProjectId(this.projectId)
-        .then(response => {
+    async fetchBugs() {
+      try {
+        const response = await BugsServices.getBugsByProjectId(
+          this.projectId,
+          this.currentPage,
+          this.perPage,
+          this.sortOrder,
+          this.searchterm // Pass the search term
+        );
+
+        if (response.data && response.data.length > 0) {
           this.bugs = response.data;
-        })
-        .catch(error => {
-          console.error('Error fetching bugs:', error);
-        });
+          this.totalItemsCount = response.totalItems;
+          this.errorMessage = "";
+        } else {
+          this.errorMessage = response.message || "No Matching Bugs Found";
+          this.bugs = [];
+          this.totalItemsCount = 0;
+        }
+      } catch (error) {
+        console.error("Error fetching bugs:", error);
+        this.errorMessage = "Failed to fetch bugs. Please try again.";
+        this.bugs = [];
+      }
     },
     deleteBug(bug) {
-      // Your logic to delete a bug goes here
-      console.log('Deleting bug:', bug);
-      // Example: remove bug from bugs array
-      this.bugs = this.bugs.filter(b => b.bug_id !== bug.bug_id);
-    }
+      console.log("Deleting bug:", bug);
+      this.bugs = this.bugs.filter((b) => b.bug_id !== bug.b.bug_id);
+    },
   },
   mounted() {
     this.fetchBugs();
     console.log(this.searchterm);
-  }
+  },
 };
 </script>
 
@@ -123,7 +165,7 @@ export default {
 }
 
 :deep(.p-datatable .p-datatable-tbody > tr > td) {
-  border-right: 1px solid #eee; 
+  border-right: 1px solid #eee;
 }
 
 .status-new {
@@ -156,16 +198,16 @@ export default {
 
 :deep(.p-datatable.p-datatable-bugs) {
   .p-datatable-header {
-    color: #007bff; 
-    background-color: #f4f4f4; 
-    font-weight: bold; 
+    color: #007bff;
+    background-color: #f4f4f4;
+    font-weight: bold;
   }
   :deep(.p-datatable.p-datatable-bugs .p-datatable-thead > tr > th) {
-    background-color: #f4f4f4; 
-    color: #007bff; 
-    font-weight: bold; 
-    padding: 10px; 
-    text-align: left; 
+    background-color: #f4f4f4;
+    color: #007bff;
+    font-weight: bold;
+    padding: 10px;
+    text-align: left;
   }
   .p-paginator {
     padding: 1rem;
@@ -182,22 +224,22 @@ export default {
 
 .avatar {
   width: 40px; /* Adjust size as needed */
-  height: 40px; 
+  height: 40px;
   border-radius: 50%;
-  object-fit: cover; 
+  object-fit: cover;
 }
 .custom-button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 12%;
-  background: none; 
-  border: none; 
-  padding: 0; 
-  cursor: pointer; 
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .custom-button .pi {
-  color: #000; 
+  color: #000;
 }
 </style>

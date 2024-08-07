@@ -8,9 +8,6 @@
         <router-link to="/Project" class="navbar__link"
           ><i class="pi pi-align-justify"></i> Projects</router-link
         >
-        <router-link to="/Task" class="navbar__link"
-          ><i class="pi pi-check-square"></i> Tasks</router-link
-        >
         <router-link to="/" class="navbar__link"
           ><i class="pi pi-cog"></i> Manage</router-link
         >

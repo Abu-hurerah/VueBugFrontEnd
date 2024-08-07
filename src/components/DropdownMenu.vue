@@ -26,7 +26,7 @@ export default {
     return {
       selectedType: this.value,
       Type: [
-        { name: "Manager", code: "Manager" },
+        { name: "Sign Out", code: "" },
         { name: "Developer", code: "Developer" },
         { name: "QA", code: "QA" },
       ],

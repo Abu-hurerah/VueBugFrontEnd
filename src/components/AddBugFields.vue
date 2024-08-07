@@ -1,86 +1,121 @@
 <template>
   <div class="create-bug">
-    <h2>Create New Bug</h2>
-    <hr />
-    <form @submit.prevent="submitForm">
-      <!-- Project ID (hidden if not meant to be changed by users) -->
-      <div class="form-group">
-        <label for="title">Project ID</label>
-        <input type="text" id="title" v-model="project_id" placeholder="Enter Project ID">
-        <span v-if="errors.title" class="error">{{ errors.title }}</span>
-      </div><div class="form-group">
-        <label for="title">Reported By</label>
-        <input type="text" id="title" v-model="reported_by" placeholder="Reported by">
-        <span v-if="errors.title" class="error">{{ errors.title }}</span>
-      </div>
-      <div class="form-group">
-        <label for="title">Bug Title</label>
-        <input type="text" id="title" v-model="title" placeholder="Enter bug title">
-        <span v-if="errors.title" class="error">{{ errors.title }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="description">Bug Description</label>
-        <textarea id="description" v-model="description" placeholder="Enter bug description"></textarea>
-        <span v-if="errors.description" class="error">{{ errors.description }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="deadline">Deadline</label>
-        <input type="date" id="deadline" v-model="deadline">
-        <span v-if="errors.deadline" class="error">{{ errors.deadline }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="type">Bug Type</label>
-        <select id="type" v-model="type">
-          <option value="feature">Feature</option>
-          <option value="bug">Bug</option>
-        </select>
-        <span v-if="errors.type" class="error">{{ errors.type }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="status">Status</label>
-        <select id="status" v-model="status">
-          <option value="new">New</option>
-          <option value="started">Started</option>
-          <option value="completed">Completed</option>
-          <option value="resolved">Resolved</option>
-        </select>
-        <span v-if="errors.status" class="error">{{ errors.status }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="assignedTo">Assign To</label>
-        <input type="number" id="assignedTo" v-model="assignedTo" placeholder="Enter assignee ID">
+    <div class="form-header">
+      <div class="form-group small-width">
+        <label for="assignTo" class="form-label">Assign to</label>
+        <Dropdown
+        id="assignTo"
+        v-model="assignedTo"
+        :options="userOptions"
+        optionLabel="name"
+        optionValue="id" 
+        placeholder="Select a user"
+          class="p-inputtext-lg select-box"
+        />
         <span v-if="errors.assignedTo" class="error">{{ errors.assignedTo }}</span>
       </div>
-
-      <hr />
-      <button type="submit" class="btn btn-primary">Create Bug</button>
+      <div class="form-group small-width">
+        <label for="deadline" class="form-label">Add due date</label>
+        <Calendar
+          id="deadline"
+          v-model="deadline"
+          dateFormat="yy-mm-dd"
+          class="p-inputtext-lg date-picker"
+          showIcon
+        />
+        <span v-if="errors.deadline" class="error">{{ errors.deadline }}</span>
+      </div>
+    </div>
+    <form @submit.prevent="submitForm">
+      <div class="form-group full-width">
+        <label for="title" class="form-label">Add title here</label>
+        <InputText
+          id="title"
+          v-model="title"
+          placeholder="Enter bug title"
+          class="p-inputtext-lg title-input"
+        />
+        <span v-if="errors.title" class="error">{{ errors.title }}</span>
+      </div>
+      <div class="form-group full-width">
+        <label for="description" class="form-label">Bug details</label>
+        <Textarea
+          id="description"
+          v-model="description"
+          placeholder="Enter bug description"
+          rows="5"
+          class="p-inputtext-lg description-input"
+        />
+        <span v-if="errors.description" class="error">{{ errors.description }}</span>
+      </div>
+      <div class="form-group file-upload full-width">
+        <label for="fileUpload" class="form-label">Upload file</label>
+        <input
+          type="file"
+          id="fileUpload"
+          @change="onFileChange"
+          class="file-input"
+        />
+        <span class="file-label">Drop any file here or <a href="#">browse</a></span>
+      </div>
+      <div class="form-actions">
+        <Button
+          type="submit"
+          label="Add"
+          class="p-button-primary p-button-lg btn"
+        />
+      </div>
     </form>
   </div>
 </template>
 
 <script>
-import BugsServices from '@/services/bugs/bugs'; // Adjust this path to your service file
+import Dropdown from "primevue/dropdown";
+import Calendar from "primevue/calendar";
+import InputText from "primevue/inputtext";
+import Button from "primevue/button";
+import Textarea from "primevue/textarea";
+import BugsServices from "@/services/bugs/bugs";
+import UserServices from "@/services/User/User";
 
 export default {
+  components: {
+    Dropdown,
+    Calendar,
+    InputText,
+    Textarea,
+    Button,
+  },
   data() {
     return {
-      project_id: null, // Set this from a global state or prop
-      reported_by: null, // Set this based on the logged-in user
-      title: '',
-      description: '',
-      deadline: '',
-      type: 'bug',
-      status: 'new',
-      assignedTo: '',
+      project_id: null,
+      reported_by: null,
+      title: "",
+      description: "",
+      deadline: "",
+      type: "bug",
+      status: "new",
+      assignedTo: "",
       errors: {},
+      users: [],
+      userOptions: [],
     };
   },
   methods: {
+    async fetchUsers() {
+    try {
+      const response = await UserServices.getAllUsers("developer");
+      console.log("Response From Users: ", response);
+
+      this.users = response; // Use response directly if it contains the users
+      this.userOptions = this.users.map(user => ({
+        id: user.user_id,
+        name: user.name, // Add name to display in the dropdown
+      }));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  },
     async submitForm() {
       if (this.validateForm()) {
         try {
@@ -95,95 +130,108 @@ export default {
             assignedTo: this.assignedTo,
           };
           await BugsServices.createBug(newBug);
-          // Reset form
-          Object.keys(newBug).forEach(key => this[key] = key in newBug ? '' : this[key]);
-          alert('Bug created successfully!');
+      
+          alert("Bug created successfully!");
         } catch (error) {
-          console.error('Error creating bug:', error);
-          alert('Failed to create bug. Please try again.');
+          console.error("Error creating bug:", error);
+          alert("Failed to create bug. Please try again.");
         }
       }
     },
     validateForm() {
       this.errors = {};
-      // Add validation checks here and update errors object accordingly
       return Object.keys(this.errors).length === 0;
     },
+    onFileChange(event) {
+      const file = event.target.files[0];
+      console.log("File uploaded:", file);
+    },
+  },
+  created() {
+    this.fetchUsers();
   },
 };
 </script>
 
 <style scoped>
-/* Your existing styles */
-</style>
-
-<style scoped>
 .create-bug {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   font-family: "Arial", sans-serif;
+  border-radius: 10px;
+  padding: 30px;
+  max-width: 700px;
+  margin: auto;
 }
 
-h2 {
-  color: #28527a;
-  text-align: center;
-}
-
-hr {
-  border: none;
-  height: 1px;
-  background-color: #dcdcdc;
-  margin: 20px 0;
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .form-group {
   margin-bottom: 20px;
 }
 
-label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #333;
+.form-group.small-width {
+  width: 48%;
 }
 
-input[type="text"],
-input[type="number"],
-input[type="date"],
-textarea,
-select {
+.form-group.full-width {
+  width: 100%;
+}
+
+.form-label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.select-box,
+.date-picker,
+.title-input,
+.description-input {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  transition: border-color 0.2s;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
-input[type="date"]:focus,
-textarea:focus,
-select:focus {
-  border-color: #28527a;
-  outline: none;
+.file-upload {
+  text-align: center;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 20px;
 }
 
-.error {
-  color: #d9534f;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+.file-input {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.file-label {
+  color: #007bff;
+}
+
+.file-label a {
+  text-decoration: underline;
+  color: #8ab0d8;
+}
+
+.form-actions {
+  text-align: right;
 }
 
 .btn {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  margin-top: 20px;
-  background-color: #007bff;
+  padding: 10px 20px;
+  background-color: #729ac5;
   color: white;
   border: none;
   border-radius: 4px;
@@ -200,26 +248,20 @@ select:focus {
   transform: translateY(2px);
 }
 
-textarea {
-  height: 120px;
-  resize: vertical;
-}
-
-select {
-  background-color: white;
-  cursor: pointer;
+.error {
+  color: #d9534f;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 
 @media (max-width: 768px) {
-  .create-bug {
-    padding: 15px;
-    margin: 20px;
+  .form-header {
+    flex-direction: column;
   }
-}
 
-@media (max-width: 480px) {
-  .btn {
-    padding: 10px;
+  .form-group.small-width,
+  .form-group.full-width {
+    width: 100%;
   }
 }
 </style>

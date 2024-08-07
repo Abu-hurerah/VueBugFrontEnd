@@ -65,6 +65,7 @@
 
       <!-- Right Section for Icons -->
       <div class="right-section flex items-center space-x-4">
+        
         <Button
           class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
           icon="pi pi-bars"
@@ -73,14 +74,7 @@
           class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
           icon="pi pi-sort-alt"
         />
-        <Button
-          class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
-          icon="pi pi-th-large"
-        />
-        <Button
-          class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
-          icon="pi pi-align-justify"
-        />
+        
       </div>
     </div>
 
@@ -110,6 +104,7 @@ export default {
   data() {
     return {
       searchTerm: " ",
+      sortBy: null,
       userdata: null,
     };
   },

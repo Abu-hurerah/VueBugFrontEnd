@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span class="p-input-icon-left p-input-icon-right">
+    <span class="p-input-icon-left">
       <i :class="['pi', iconClass]" />
       <input
         class="inputFields"
@@ -18,7 +18,7 @@ export default {
   props: {
     value: {
       type: String,
-      required: true,
+      default: '',
     },
     iconClass: {
       type: String,

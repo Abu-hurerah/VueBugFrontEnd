@@ -69,7 +69,6 @@ export default {
       sortBy: null,
       projectFilter: null,
       sortOptions: [
-        { label: "Date", value: "date" },
         { label: "A-Z", value: "ASC" },
         { label: "Z-A", value: "DESC" },
       ],
@@ -95,8 +94,7 @@ export default {
       console.log("Filtering projects:", this.projectFilter);
     },
     refreshProjects() {
-      console.log("Projects refreshed");
-      this.fetchProjects(); // Call fetchProjects to refresh the data
+
     }
   },
 };

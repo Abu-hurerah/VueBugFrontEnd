@@ -7,11 +7,12 @@ import 'primevue/resources/primevue.min.css';                 //core css
 import 'primeicons/primeicons.css';                           //icons
 import PrimeVue from 'primevue/config';
 import 'primeflex/primeflex.css'; // Make sure this path is correct
-
+import ToastService from 'primevue/toastservice';
 Vue.config.devtools = true
 Vue.config.productionTip = false
 Vue.use(VueResource)
 Vue.use(PrimeVue);
+Vue.use(ToastService);
 
 new Vue({
   router, // Add the router instance here

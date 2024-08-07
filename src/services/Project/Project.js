@@ -4,30 +4,30 @@ const API_URL = "http://localhost:8080/projects"; // Adjust if your base URL is 
 
 class ProjectServices {
     // Retrieve all projects
-    static getAllProjects(page = 1, itemsPerPage = 6, OrderBy = 'ASC') {
+    static getAllProjects(page = 1, itemsPerPage = 6, OrderBy = 'ASC', name = '') {
         const token = Utilities.getTokenFromStorage(); // Ensure this method correctly retrieves the token
         console.log("Token: ", token);
-      
-        // Include pagination and sorting parameters in the request URL
-        const queryParams = `?page=${page}&limit=${itemsPerPage}&OrderBy=${OrderBy}`;
+
+        // Include pagination, sorting, and name search parameters in the request URL
+        const queryParams = `?page=${page}&limit=${itemsPerPage}&OrderBy=${OrderBy}&name=${encodeURIComponent(name)}`;
         console.log(queryParams);
-      
+
         return Vue.http.get(API_URL + queryParams, { headers: { 'Authorization': `Bearer ${token}` } })
-          .then(response => {
-            console.log("Response Inside", response.body); // Assuming vue-resource which uses .body
-            return response.body; // Ensure this matches how your API formats responses
-          })
-          .catch(error => {
-            console.error('Failed to fetch projects:', error);
-            if (error.response) {
-              console.error('Error response:', error.response.status, error.response.body);
-            } else {
-              console.error('Error in response:', error.message);
-            }
-            throw error;
-          });
-      }
-      
+            .then(response => {
+                console.log("Response Inside", response.body); // Assuming vue-resource which uses .body
+                return response.body; // Ensure this matches how your API formats responses
+            })
+            .catch(error => {
+                console.error('Failed to fetch projects:', error);
+                if (error.response) {
+                    console.error('Error response:', error.response.status, error.response.body);
+                } else {
+                    console.error('Error in response:', error.message);
+                }
+                throw error;
+            });
+    }
+
 
 
 
@@ -43,13 +43,13 @@ class ProjectServices {
 
     // Retrieve projects by name
     static getProjectsByName(name) {
-        const token = Utilities.getTokenFromStorage();  
+        const token = Utilities.getTokenFromStorage();
         console.log("Calling the get Projects by name with term", name)
         console.log("Token Value", token)
         return Vue.http.get(`${API_URL}/name/${name}`, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(response => {
-                console.log("Response Body", response.body);  
-                return response.body;  
+                console.log("Response Body", response.body);
+                return response.body;
             })
             .catch(error => {
                 console.error('Failed to fetch projects by name:', error);
@@ -62,20 +62,20 @@ class ProjectServices {
         const token = Utilities.getTokenFromStorage();
         console.log("Token Value", token);
         console.log("Creating project with data:", projectData);
-
+        console.log("Everything is good from Frontend")
         return Vue.http.post(`${API_URL}`, projectData, {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json' 
+                'Content-Type': 'application/json'
             }
         })
             .then(response => {
                 console.log("Response Inside", response.body);
-                return response.body; 
+                return response.body;
             })
             .catch(error => {
                 console.error('Failed to create project:', error);
-                throw error; 
+                throw error;
             });
     }
 

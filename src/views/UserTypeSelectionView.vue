@@ -1,21 +1,21 @@
 <template>
   <div>
     <!-- <Navigationbar></Navigationbar> -->
-    <UserTypeRightScreen></UserTypeRightScreen>
-    <UserTypeLeftScreen></UserTypeLeftScreen>
+    <UserTypeSelectionMenu></UserTypeSelectionMenu>
+    <UserTypeBackground></UserTypeBackground>
     
   </div>
 </template>
 
 <script>
 // import Navigationbar from "@/components/Navigationbar.vue";
-import UserTypeLeftScreen from "@/components/UserTypeLeftScreen.vue";
-import UserTypeRightScreen from "@/components/UserTypeRightScreen.vue";
+import UserTypeBackground from "@/components/UserTypeBackground.vue";
+import UserTypeSelectionMenu from "@/components/UserTypeSelectionMenu.vue";
 
 export default {
   components: {
-    UserTypeRightScreen,
-    UserTypeLeftScreen,
+    UserTypeSelectionMenu,
+    UserTypeBackground,
     // Navigationbar,
   },
   name: "UserTypeSelection",

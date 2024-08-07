@@ -4,15 +4,16 @@ const API_URL = "http://localhost:8080/users";
 import Utilities from '@/helpers/Utilites';
 class UserServices {
   // Retrieve all users
-  static async getAllUsers() {
+  static async getAllUsers(role) {
     try {
-      const response = await Vue.http.get(API_URL);
-      return response.json();
+        const response = await Vue.http.get(`${API_URL}/${encodeURIComponent(role)}`);
+        return response.body; 
     } catch (error) {
-      console.error(error);
-      throw error;
+        console.error('Error fetching users:', error);
+        throw new Error('Failed to fetch users. Please try again later.');
     }
-  }
+}
+
 
   // Retrieve a user by name
   static async getUsersByName(name) {

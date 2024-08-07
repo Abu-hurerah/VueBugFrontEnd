@@ -4,25 +4,22 @@ const API_URL = "http://localhost:8080/bugs"; // Adjust if your base URL is diff
 
 class BugsServices {
     // Retrieve all bugs for a specific project
-    static getBugsByProjectId(project_id, sortOrder = 'ASC', limit = 10, offset = 0) {
-        const token = Utilities.getTokenFromStorage(); // Ensure this method correctly retrieves the token
+    static getBugsByProjectId(project_id, page = 1, itemsPerPage = 6, OrderBy = 'ASC', searchterm = '') {
+        const token = Utilities.getTokenFromStorage();
         console.log("Token: ", token);
-    
-        // Include pagination and sorting parameters in the request URL
-        const queryParams = `?sortOrder=${sortOrder}&limit=${limit}&offset=${offset}`;
-        console.log("Query Params: ", queryParams);
-    
-        // Updated API URL to include project_id in the path
-        const apiUrlWithProjectId = `${API_URL}/project/${project_id}`;
-        console.log("API URL: ", apiUrlWithProjectId + queryParams);
-    
-        return Vue.http.get(apiUrlWithProjectId + queryParams, { headers: { 'Authorization': `Bearer ${token}` } })
+
+        // Include pagination, sorting, and search parameters in the request URL
+        const queryParams = `?page=${page}&limit=${itemsPerPage}&OrderBy=${OrderBy}&searchterm=${encodeURIComponent(searchterm)}`;
+        const apiUrlWithProjectId = `${API_URL}/project/${project_id}${queryParams}`;
+        console.log("API URL: ", apiUrlWithProjectId);
+
+        return Vue.http.get(apiUrlWithProjectId, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(response => {
-                console.log("Response Inside", response.body); // Assuming vue-resource which uses .body
-                return response.body; // Ensure this matches how your API formats responses
+                console.log("Response Inside", response.body);
+                return response.body;
             })
             .catch(error => {
-                console.error('Failed to fetch bugs by project ID:', error);
+                console.error('Failed to fetch bugs:', error);
                 if (error.response) {
                     console.error('Error response:', error.response.status, error.response.body);
                 } else {

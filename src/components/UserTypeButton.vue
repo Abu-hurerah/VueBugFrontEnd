@@ -10,7 +10,6 @@
 
 <script>
 import Button from "primevue/button";
-
 export default {
   components: {
     Button,
@@ -23,7 +22,6 @@ export default {
   },
   methods: {
     handleClick() {
-      // Emit the title (user type) when the button is clicked
       this.$emit('click', this.title);
     }
   },

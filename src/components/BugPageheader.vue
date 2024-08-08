@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Header Section -->
+    <Toast position="top-right" />
     <div class="bg-white flex items-center justify-between px-10 custom-margin">
       <!-- Left Section -->
       <div class="left-section flex items-center space-x-3">
@@ -22,7 +22,7 @@
           icon="pi pi-ellipsis-h"
           class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
         />
-        <AddBugModal v-if="userdata === 'QA'">Add New Bugs</AddBugModal>
+        <AddBugModal v-if="userdata === 'QA'" :projectId="projectId" >Add New Bugs</AddBugModal>
       </div>
     </div>
 
@@ -65,7 +65,6 @@
 
       <!-- Right Section for Icons -->
       <div class="right-section flex items-center space-x-4">
-        
         <Button
           class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
           icon="pi pi-bars"
@@ -74,7 +73,46 @@
           class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
           icon="pi pi-sort-alt"
         />
-        
+        <div v-if="userdata === 'MANAGER'">
+          <Button class="custom-button" icon="pi pi-plus" @click="openModal">
+            Assign
+          </Button>
+          <Dialog
+            header="Assign QA/DEV"
+            :visible.sync="displayModal"
+            :containerStyle="{ width: '50vw' }"
+            :modal="true"
+            class="custom-dialog"
+          >
+            <div class="dialog-content">
+              <label for="Assign QA" class="form-label">Assign QA</label>
+              <Dropdown
+                v-model="qa_assign"
+                :options="userOptionsQA"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Select a user"
+                class="p-inputtext-lg select-box"
+              />
+              <label for="Assign QA" class="form-label">Assign DEV</label>
+              <Dropdown
+                v-model="dev_assign"
+                :options="userOptionsDev"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Select a user"
+                class="p-inputtext-lg select-box"
+              />
+              <Button
+                class="assign-submit"
+                icon="pi pi-plus"
+                @click="submitAssignment"
+              >
+                Submit
+              </Button>
+            </div>
+          </Dialog>
+        </div>
       </div>
     </div>
 
@@ -90,27 +128,129 @@ import Button from "primevue/button";
 import AddBugModal from "./AddBugModal.vue";
 import Divider from "primevue/divider/Divider";
 import Utilities from "@/helpers/Utilites";
+import Dialog from "primevue/dialog/Dialog";
+import Dropdown from "primevue/dropdown/Dropdown";
+import UserServices from "@/services/User/User";
+import Toast from "primevue/toast";
+import ProjectServices from "@/services/Project/Project";
 export default {
   components: {
     Button,
     AddBugModal,
     Divider,
+    Dialog,
+    Dropdown,
+    Toast,
   },
-
+  props: {
+    projectId: String,
+  },
   created() {
     this.userdata = Utilities.getuserInfo();
     this.userdata = this.userdata.toUpperCase();
+    this.fetchUsers();
+    console.log("Project ID INside Header: ",this.projectId)
   },
   data() {
     return {
-      searchTerm: " ",
+      searchTerm: "",
       sortBy: null,
       userdata: null,
+      displayModal: false,
+      users: [],
+      userOptionsQA: [],
+      userOptionsDev: [],
+      qa_assign: "",
+      dev_assign: "",
     };
   },
   methods: {
+    async fetchUsers() {
+      try {
+        const QA_API_RESPONSE = await UserServices.getAllUsers("QA");
+        this.users = QA_API_RESPONSE;
+        this.userOptionsQA = this.users.map((user) => ({
+          id: user.user_id,
+          name: user.name, // Add name to display in the dropdown
+        }));
+
+        const DEV_API_RESPONSE = await UserServices.getAllUsers("developer");
+        this.users = DEV_API_RESPONSE;
+        this.userOptionsDev = this.users.map((user) => ({
+          id: user.user_id,
+          name: user.name,
+        }));
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        this.$toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Error fetching users.",
+          life: 2000,
+        });
+      }
+    },
     emitSearchTerm() {
       this.$emit("search-term", this.searchTerm);
+    },
+    openModal() {
+      console.log("Open Modal");
+      this.displayModal = true;
+    },
+    async submitAssignment() {
+      if (!this.projectId) {
+        console.error("Project ID is missing.");
+        this.$toast.add({
+          severity: "warn",
+          summary: "Warning",
+          detail: "Project ID is missing.",
+          life: 1500,
+        });
+        return;
+      }
+
+      // Create an array to hold API requests
+      const apiRequests = [];
+
+      // Check if QA user is selected and create API request if true
+      if (this.qa_assign) {
+        const qaAssignmentData = {
+          project_id: this.projectId,
+          user_id: this.qa_assign,
+        };
+        console.log("API REQUEST PUSH ASSIGN")
+        apiRequests.push(ProjectServices.AssignQA_Dev(qaAssignmentData));
+      }
+
+      // Check if DEV user is selected and create API request if true
+      if (this.dev_assign) {
+        const devAssignmentData = {
+          project_id: this.projectId,
+          user_id: this.dev_assign,
+        };
+        apiRequests.push(ProjectServices.AssignQA_Dev(devAssignmentData));
+      }
+
+      // Execute all API requests in parallel
+      try {
+        await Promise.all(apiRequests);
+        console.log("Users assigned successfully");
+        this.$toast.add({
+          severity: "success",
+          summary: "Success",
+          detail: "Users assigned successfully.",
+          life: 1500,
+        });
+        this.displayModal = false; // Close the modal after successful submission
+      } catch (error) {
+        console.error("Error assigning users to project:", error);
+        this.$toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Error assigning users to project.",
+          life: 1500,
+        });
+      }
     },
   },
 };
@@ -277,11 +417,84 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #718096;
+  color: #ffffff;
 }
 
 .right-section .p-button:hover {
   border-color: #ccc;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.custom-button {
+  width: 100%;
+  background-color: #d3c440;
+  color: #111010;
+  padding: 12px 20px;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.custom-button:hover {
+  background-color: #ced19c;
+}
+
+.pi {
+  margin-right: 0.5em;
+}
+
+.confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.select-box {
+  width: 100%;
+  padding: 10px;
+  height: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+.Assign-dialog {
+  background-color: #fff;
+  font-family: "Arial", sans-serif;
+  border-radius: 10px;
+  padding: 30px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.dialog-content {
+  padding: 20px; /* Add padding if needed for spacing */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around; /* This helps distribute space evenly */
+  height: 80%;
+}
+
+.assign-submit {
+  width: 20%;
+  background-color: #d3c440;
+  color: #111010;
+  padding: 12px 20px;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+label {
+  padding-top: 20px;
 }
 </style>

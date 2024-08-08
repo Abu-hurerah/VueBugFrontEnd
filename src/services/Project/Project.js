@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import Utilities from '@/helpers/Utilites';
 const API_URL = "http://localhost:8080/projects"; // Adjust if your base URL is different
-
 class ProjectServices {
     // Retrieve all projects
     static getAllProjects(page = 1, itemsPerPage = 6, OrderBy = 'ASC', name = '') {
@@ -27,36 +26,6 @@ class ProjectServices {
                 throw error;
             });
     }
-
-
-
-
-    // Retrieve a project by ID
-    static getProjectById(id) {
-        return Vue.http.get(`${API_URL}/id/${id}`)
-            .then(response => response.json())
-            .catch(error => {
-                console.error('Failed to fetch project by ID:', error);
-                throw error;
-            });
-    }
-
-    // Retrieve projects by name
-    static getProjectsByName(name) {
-        const token = Utilities.getTokenFromStorage();
-        console.log("Calling the get Projects by name with term", name)
-        console.log("Token Value", token)
-        return Vue.http.get(`${API_URL}/name/${name}`, { headers: { 'Authorization': `Bearer ${token}` } })
-            .then(response => {
-                console.log("Response Body", response.body);
-                return response.body;
-            })
-            .catch(error => {
-                console.error('Failed to fetch projects by name:', error);
-                throw error;
-            });
-    }
-
     // Create a new project
     static createProject(projectData) {
         const token = Utilities.getTokenFromStorage();
@@ -88,6 +57,26 @@ class ProjectServices {
                 throw error;
             });
     }
+    static AssignQA_Dev(projectData){
+        const token = Utilities.getTokenFromStorage();
+        console.log("Token Value", token);
+        console.log("Creating project with data:", projectData);
+        console.log("Everything is good from Frontend")
+        return Vue.http.patch(`${API_URL}`, projectData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        })
+            .then(response => {
+                console.log("Response Inside", response.body);
+                return response.body;
+            })
+            .catch(error => {
+                console.error('Failed to create project:', error);
+                throw error;
+            });        
+
+    }
 
     // Delete a project
     static deleteProject(id) {
@@ -95,26 +84,6 @@ class ProjectServices {
             .then(response => response.json())
             .catch(error => {
                 console.error('Failed to delete project:', error);
-                throw error;
-            });
-    }
-
-    // Assign QA to a project
-    static assignQAtoProject(id, qaId) {
-        return Vue.http.post(`${API_URL}/Assign/QA/${id}`, { qaId })
-            .then(response => response.json())
-            .catch(error => {
-                console.error('Failed to assign QA:', error);
-                throw error;
-            });
-    }
-
-    // Assign Developer to a project
-    static assignDevToProject(id, devId) {
-        return Vue.http.post(`${API_URL}/Assign/dev/${id}`, { devId })
-            .then(response => response.json())
-            .catch(error => {
-                console.error('Failed to assign developer:', error);
                 throw error;
             });
     }

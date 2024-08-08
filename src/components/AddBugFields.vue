@@ -8,10 +8,11 @@
         v-model="assignedTo"
         :options="userOptions"
         optionLabel="name"
-        optionValue="id" 
+        optionValue="id"
         placeholder="Select a user"
-          class="p-inputtext-lg select-box"
-        />
+        class="p-inputtext-lg select-box"
+      />
+      
         <span v-if="errors.assignedTo" class="error">{{ errors.assignedTo }}</span>
       </div>
       <div class="form-group small-width">
@@ -88,8 +89,6 @@ export default {
   },
   data() {
     return {
-      project_id: null,
-      reported_by: null,
       title: "",
       description: "",
       deadline: "",
@@ -100,6 +99,9 @@ export default {
       users: [],
       userOptions: [],
     };
+  },
+  props: {
+    projectId: Number,
   },
   methods: {
     async fetchUsers() {
@@ -120,14 +122,13 @@ export default {
       if (this.validateForm()) {
         try {
           const newBug = {
-            project_id: this.project_id,
-            reported_by: this.reported_by,
+            project_id: this.projectId,
             title: this.title,
             description: this.description,
             deadline: this.deadline,
             type: this.type,
             status: this.status,
-            assignedTo: this.assignedTo,
+            assigned_to: this.assignedTo,
           };
           await BugsServices.createBug(newBug);
       
@@ -148,6 +149,7 @@ export default {
     },
   },
   created() {
+    console.log("Project ID in the BugFields: ",this.projectId)
     this.fetchUsers();
   },
 };

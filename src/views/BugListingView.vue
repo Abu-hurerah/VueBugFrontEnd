@@ -1,7 +1,7 @@
 <template>
   <div class="projects">
     <Navigationbar></Navigationbar>
-    <BugPageheader @search-term="onSearchTerm"></BugPageheader>
+    <BugPageheader @search-term="onSearchTerm" :projectId="projectId"></BugPageheader>
     <div v-if="errorMessage" class="no-projects-message">
       <p>{{ errorMessage }}</p>
     </div>
@@ -22,10 +22,15 @@ export default {
   },
   data() {
     return {
-      projectId: null,
       searchTerm: "",
       errorMessage: ""
     };
+  },
+  props: {
+    projectId: {
+      type: String,
+      required: true 
+    }
   },
   methods: {
     onSearchTerm(searchTerm) {
@@ -34,8 +39,7 @@ export default {
     }
   },
   created() {
-    this.projectId = parseInt(this.$route.query.project_id);
-    console.log("Bug View: ", this.projectId);
+        console.log("Bug View: ", this.projectId);
   }
 }
 </script>

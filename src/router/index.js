@@ -4,7 +4,7 @@ import Router from 'vue-router';
 Vue.use(Router);
 
 const router = new Router({
-  mode: 'history', // Use history mode for clean URLs
+  mode: 'history',
   base: process.env.BASE_URL,
   routes: [
     {
@@ -13,10 +13,11 @@ const router = new Router({
       component: () => import('../views/UserTypeSelectionView.vue')
     },
     {
-      path: '/Task',
+      path: '/Task/:projectId', 
       name: 'Task',
       component: () => import('../views/BugListingView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
+      props: true 
     },
     {
       path: '/',
@@ -33,6 +34,10 @@ const router = new Router({
       name: 'Project',
       component: () => import('../views/ProjectListingView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '*',
+      component: () => import('../views/NotFoundView.vue') // 404 Not Found Page
     }
   ]
 });
@@ -43,7 +48,7 @@ router.beforeEach((to, from, next) => {
 
   if (requiresAuth && !token) {
     localStorage.setItem('redirectMessage', 'You need to login before accessing this page.');
-    if (to.name !== 'login') { // Prevent infinite redirect loop
+    if (to.name !== 'login') {
       next({ name: 'login' });
     } else {
       next();

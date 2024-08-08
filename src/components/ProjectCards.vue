@@ -2,11 +2,11 @@
   <div class="ag-format-container">
     <div class="ag-courses_box">
       <router-link
-        v-for="(project, index) in projects"
-        :key="project.id"
-        :to="{ path: '/Task', query: { project_id: project.id } }"
-        class="ag-courses-item_link"
-      >
+      v-for="(project, index) in projects"
+      :key="project.id"
+      :to="{ name: 'Task', params: { projectId: project.id } }"
+      class="ag-courses-item_link"
+    >
         <div class="static-logo">
           <img
             :src="logos[index % logos.length]"

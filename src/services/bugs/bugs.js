@@ -43,6 +43,7 @@ class BugsServices {
     // Create a new bug
     static createBug(bugData) {
         const token = Utilities.getTokenFromStorage();
+        
         console.log("Token Value", token);
         console.log("Creating bug with data:", bugData);
 

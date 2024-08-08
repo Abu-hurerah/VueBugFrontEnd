@@ -1,6 +1,8 @@
 <template>
-  <div class="data-table-container">
-    <DataTable
+  <div>
+  <div v-if="bugs.length == 0" class="no-bugs-message" ><h2 >NO BUGS YET</h2></div>
+  <div class="data-table-container" v-if="bugs.length > 0">
+      <DataTable 
       :value="bugs"
       class="p-datatable-bugs"
       :paginator="true"
@@ -46,6 +48,7 @@
       </Column>
     </DataTable>
   </div>
+</div>
 </template>
 
 <script>
@@ -155,6 +158,10 @@ export default {
     this.fetchBugs();
     console.log(this.searchterm);
   },
+  created(){
+    console.log("Project ID inside the BugGrid: ",this.projectId)
+
+  }
 };
 </script>
 
@@ -241,5 +248,13 @@ export default {
 
 .custom-button .pi {
   color: #000;
+}
+
+.no-bugs-message {
+  text-align: center;
+  font-size: 24px;
+  color: #666;
+  padding: 20px;
+  margin-top: 10%;
 }
 </style>

@@ -27,7 +27,7 @@ export default {
     AddBugFields,
   },
   props: {
-    projectId: Number,
+    projectId: String,
   },
   data() {
     return {

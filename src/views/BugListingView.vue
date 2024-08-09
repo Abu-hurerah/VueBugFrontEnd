@@ -5,7 +5,7 @@
     <div v-if="errorMessage" class="no-projects-message">
       <p>{{ errorMessage }}</p>
     </div>
-    <BugGridShow v-if="!errorMessage" :projectId="projectId" :searchterm="searchTerm"></BugGridShow>
+    <BugGridShow v-if="!errorMessage" :projectId="projectId"></BugGridShow>
   </div>
 </template>
 

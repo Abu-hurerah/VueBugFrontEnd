@@ -63,8 +63,19 @@ class BugsServices {
     }
 
     // Update bug details
-    static updateBug(id, bugData) {
-        return Vue.http.patch(`${API_URL}/${id}`, bugData)
+    static updateBug(id, Status) {
+        const token = Utilities.getTokenFromStorage();
+        
+        console.log("Token Value", token);
+
+        const bugData = {
+            "status": Status
+        }
+        return Vue.http.patch(`${API_URL}/${id}`, bugData,{
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        })
             .then(response => response.json())
             .catch(error => {
                 console.error('Failed to update bug:', error);

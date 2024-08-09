@@ -60,6 +60,7 @@ class ProjectServices {
     static AssignQA_Dev(projectData){
         const token = Utilities.getTokenFromStorage();
         console.log("Token Value", token);
+        console.log("Project Data in the Assign QA_DEV",projectData)
         console.log("Creating project with data:", projectData);
         console.log("Everything is good from Frontend")
         return Vue.http.patch(`${API_URL}`, projectData, {

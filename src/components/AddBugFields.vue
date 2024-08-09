@@ -101,7 +101,7 @@ export default {
     };
   },
   props: {
-    projectId: Number,
+    projectId: String,
   },
   methods: {
     async fetchUsers() {

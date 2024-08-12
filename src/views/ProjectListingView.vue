@@ -24,6 +24,7 @@ import ProjectCards from "@/components/ProjectCards.vue";
 import ProjectHeaders from "@/components/ProjectHeaders.vue";
 import ProjectServices from "../services/Project/Project";
 import Paginator from "primevue/paginator/Paginator";
+import urlParamsMixins from "@/helpers/urlParamsMixins";
 
 export default {
   components: {
@@ -32,6 +33,7 @@ export default {
     Paginator,
     Navigationbar,
   },
+  mixins: [urlParamsMixins],
   data() {
     return {
       projects: [],
@@ -43,10 +45,17 @@ export default {
       errorMessage: "No Projects", // Add an error message state
     };
   },
-  created() {
-    this.fetchProjects();
-  },
+  // created() {
+  //   this.fetchProjects();
+  // },
   methods: {
+    fetchListData() {
+      const { page = 1, sort, search } = this.$route.query;
+      this.currentPage = parseInt(page);  // Ensure currentPage is synced with URL
+      this.sortOrder = sort;
+      this.searchTerm = search;
+      this.fetchProjects();
+    },
     async fetchProjects() {
       try {
         let response;
@@ -99,16 +108,18 @@ export default {
     },
     onSearchTerm(searchTerm) {
       this.searchTerm = searchTerm;
-      this.currentPage = 1; // Reset to first page for new search
+      this.updateUrlParams({ search: searchTerm || undefined, page: 1 }); // Remove search from URL if empty
       this.fetchProjects();
     },
     onSortBy(sortOrder) {
       this.sortOrder = sortOrder;
+      this.updateUrlParams({ sort: sortOrder, page: 1 });
       this.fetchProjects();
     },
     onPageChange(event) {
-      this.currentPage = event.page + 1; // Adjust page count (+1 if API is zero-indexed)
-      this.fetchProjects(); // Fetch projects whenever page changes
+      this.currentPage = event.page + 1; // Update current page
+      this.updateUrlParams({ page: this.currentPage });
+      this.fetchProjects();
     }
   },
 };

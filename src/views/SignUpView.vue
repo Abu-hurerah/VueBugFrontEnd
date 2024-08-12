@@ -29,13 +29,12 @@ export default {
   methods: {
     async CreateUser() {
       try {
-        const response = await UserServices.createUser(
+        await UserServices.createUser(
           this.name,
           this.userType,
           this.email,
           this.password
         );
-        console.log("Signup success:", response.data);
         this.$router.push({ name: "home" });
         this.error = "";
       } catch (error) {

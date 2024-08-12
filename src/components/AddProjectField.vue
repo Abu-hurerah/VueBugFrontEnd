@@ -85,10 +85,8 @@ export default {
             name: this.projectName,
             desc: this.projectDesc,
           };
-          const response = await ProjectServices.createProject(projectData);
-          console.log("Project created successfully:", response);
+          await ProjectServices.createProject(projectData);
           this.$toast.add({ severity: 'success', summary: 'Success', detail: 'Project Created Successful!', life: 2000 });
-
           this.resetForm();
         } catch (error) {
           let errorMessage = 'Project Creation failed.';

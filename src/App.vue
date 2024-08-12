@@ -17,7 +17,6 @@ export default {
     Toast
   },
   mounted(){
-    console.log("Loaded")
   },
 }
 </script>

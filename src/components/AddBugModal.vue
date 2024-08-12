@@ -36,12 +36,10 @@ export default {
   },
   methods: {
     openModal() {
-      console.log("Open Modal");
       this.displayModal = true;
     },
   },
   created(){
-    console.log("project ID inside the Bug Modal: ",this.projectId)
   }
 };
 </script>

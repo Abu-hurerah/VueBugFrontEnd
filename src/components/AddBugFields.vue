@@ -1,19 +1,32 @@
 <template>
   <div class="create-bug">
+    <Toast position="top-right" />
+
     <div class="form-header">
       <div class="form-group small-width">
         <label for="assignTo" class="form-label">Assign to</label>
         <Dropdown
-        id="assignTo"
-        v-model="assignedTo"
-        :options="userOptions"
-        optionLabel="name"
-        optionValue="id"
-        placeholder="Select a user"
-        class="p-inputtext-lg select-box"
-      />
-      
+          id="assignTo"
+          v-model="assignedTo"
+          :options="userOptions"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select a user"
+          class="p-inputtext-lg select-box"
+        />
         <span v-if="errors.assignedTo" class="error">{{ errors.assignedTo }}</span>
+      </div>
+      <div class="form-group small-width">
+        <label for="bugType" class="form-label">Type of Bug</label>
+        <Dropdown
+          id="bugType"
+          v-model="type"
+          :options="bugTypes"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select bug type"
+          class="p-inputtext-lg select-box"
+        />
       </div>
       <div class="form-group small-width">
         <label for="deadline" class="form-label">Add due date</label>
@@ -78,6 +91,7 @@ import Button from "primevue/button";
 import Textarea from "primevue/textarea";
 import BugsServices from "@/services/bugs/bugs";
 import UserServices from "@/services/User/User";
+import Toast from 'primevue/toast';
 
 export default {
   components: {
@@ -86,6 +100,7 @@ export default {
     InputText,
     Textarea,
     Button,
+    Toast
   },
   data() {
     return {
@@ -98,6 +113,10 @@ export default {
       errors: {},
       users: [],
       userOptions: [],
+      bugTypes: [
+        { label: "Bug", value: "bug" },
+        { label: "Feature", value: "feature" }
+      ],
     };
   },
   props: {
@@ -105,19 +124,17 @@ export default {
   },
   methods: {
     async fetchUsers() {
-    try {
-      const response = await UserServices.getAllUsers("developer");
-      console.log("Response From Users: ", response);
-
-      this.users = response; // Use response directly if it contains the users
-      this.userOptions = this.users.map(user => ({
-        id: user.user_id,
-        name: user.name, // Add name to display in the dropdown
-      }));
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  },
+      try {
+        const response = await UserServices.getAllUsers("developer");
+        this.users = response; 
+        this.userOptions = this.users.map(user => ({
+          id: user.user_id,
+          name: user.name, 
+        }));
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    },
     async submitForm() {
       if (this.validateForm()) {
         try {
@@ -131,25 +148,32 @@ export default {
             assigned_to: this.assignedTo,
           };
           await BugsServices.createBug(newBug);
-      
-          alert("Bug created successfully!");
         } catch (error) {
           console.error("Error creating bug:", error);
-          alert("Failed to create bug. Please try again.");
         }
       }
     },
     validateForm() {
       this.errors = {};
+      if (!this.title) {
+        this.errors.title = 'Title is required.';
+      }
+      if (!this.description) {
+        this.errors.description = 'Description is required.';
+      }
+      if (!this.assignedTo) {
+        this.errors.assignedTo = 'Assignment is required.';
+      }
+      if (!this.deadline) {
+        this.errors.deadline = 'Deadline is required.';
+      }
       return Object.keys(this.errors).length === 0;
     },
     onFileChange(event) {
-      const file = event.target.files[0];
-      console.log("File uploaded:", file);
+      event.target.files[0];
     },
   },
   created() {
-    console.log("Project ID in the BugFields: ",this.projectId)
     this.fetchUsers();
   },
 };
@@ -265,5 +289,15 @@ export default {
   .form-group.full-width {
     width: 100%;
   }
+}
+.error {
+  color: red;
+  font-size: 0.875em;
+}
+.select-box, .date-picker, .title-input, .description-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 </style>

@@ -58,7 +58,6 @@ export default {
   },
   methods: {
     viewProfile() {
-      console.log("Viewing profile...");
     },
     signOut() {
       this.$router.push("/");

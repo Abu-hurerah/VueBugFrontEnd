@@ -2,17 +2,12 @@
   <div>
     <Toast position="top-right" />
     <div v-if="bugs.length == 0" class="no-bugs-message">
-      <h2>NO BUGS YET</h2>
+      <h2>NO BUGS</h2>
     </div>
     <div class="data-table-container" v-if="bugs.length > 0">
       <DataTable
         :value="bugs"
         class="p-datatable-bugs"
-        :paginator="true"
-        :rows="10"
-        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-        :rowsPerPageOptions="[10]"
-        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
       >
         <Column field="title" header="Bug Details"></Column>
         <Column field="status" header="Status">
@@ -24,13 +19,10 @@
         </Column>
         <Column field="reported_by" header="Reported By"></Column>
         <Column field="assigned_to" header="Assigned To"></Column>
+        <Column field="type" header="Type"></Column>
         <Column field="avatar" header="Avatar">
           <template #body="">
-            <img
-              src="@/assets/Images/avatarstatic2.png"
-              alt="Avatar"
-              class="avatar"
-            />
+            <img src="@/assets/Images/avatarstatic2.png" alt="Avatar" class="avatar" />
           </template>
         </Column>
         <Column header="Action" :styles="{ 'min-width': '8rem' }">
@@ -43,9 +35,15 @@
           </template>
         </Column>
       </DataTable>
+      <Paginator
+         v-if="bugs.length > 0"
+        :rows="perPage"
+        :totalRecords="totalItemsCount"
+        @page="onPageChange"
+      ></Paginator>
     </div>
     <Dialog
-      :visible.sync="productDialog"
+      :visible.sync="StateDialog"
       :style="{ width: '450px' }"
       header="Edit Bug"
       :modal="true"
@@ -53,9 +51,7 @@
     >
       <div class="field">
         <label>Bug Title</label>
-        <div class="bug-title-display">
-          {{ editBug.title }}
-        </div>
+        <div class="bug-title-display">{{ editBug.title }}</div>
       </div>
       <div class="field">
         <label for="statusDropdown">Change Status</label>
@@ -85,6 +81,7 @@
     </Dialog>
   </div>
 </template>
+
 <script>
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
@@ -93,16 +90,14 @@ import Dialog from "primevue/dialog";
 import Dropdown from "primevue/dropdown";
 import BugsServices from "@/services/bugs/bugs"; // Assuming you have this service
 import Toast from 'primevue/toast';
+import Paginator from "primevue/paginator/Paginator";
+import urlParamsMixins from "@/helpers/urlParamsMixins"; // Ensure mixin is imported
 
 export default {
   components: {
-    DataTable,
-    Column,
-    Button,
-    Dialog,
-    Dropdown,
-    Toast,
+    DataTable, Column, Button, Dialog, Dropdown, Toast, Paginator
   },
+  mixins: [urlParamsMixins],
   props: {
     projectId: String,
   },
@@ -113,9 +108,9 @@ export default {
       totalItemsCount: 0,
       perPage: 10,
       searchterm: "",
-      sortOrder: "ASC",
-      errorMessage: "", // Add an error message state
-      productDialog: false,
+      errorMessage: "",
+      sortOrder: "",
+      StateDialog: false,
       editBug: {
         id: null,
         title: "",
@@ -130,52 +125,67 @@ export default {
     };
   },
   watch: {
-    // searchterm() {
-    //   this.fetchBugs();
-    // },
-    projectId() {
-      this.fetchBugs();
-    },
-    currentPage() {
-      this.fetchBugs();
-    },
+    '$route.query': {
+      immediate: true,
+      handler() {
+        this.fetchListData();
+      }
+    }
   },
   methods: {
     statusClass(status) {
       return `status-${status.toLowerCase()}`;
     },
     editProduct(bug) {
-      this.editBug = { ...bug };
-      this.productDialog = true;
+      this.editBug.id = bug.bug_id;
+      this.editBug.status = bug.status
+      this.editBug.title = bug.title
+      this.StateDialog = true;
     },
     hideDialog() {
-      this.productDialog = false;
+      this.StateDialog = false;
     },
     async saveEdit() {
       try {
-        console.log("Saving changes for Bug ID:", this.editBug.bug_id, "New Status:", this.editBug.status);
-        const response = await BugsServices.updateBug(this.editBug.bug_id, this.editBug.status);
-        console.log("Update response:", response);
-        this.$toast.add({severity:'success', summary:'Success', detail:'Bug updated successfully', life: 3000});
+        await BugsServices.updateBug(this.editBug.id, this.editBug.status);
+        this.StateDialog = false;
+        this.fetchBugs();
+        this.$toast.add({severity:'success', summary:'Success', detail:'Bug updated successfully', life: 3000}); 
       } catch (error) {
         console.error("Failed to update bug:", error);
         this.$toast.add({severity:'error', summary:'Error', detail:'Failed to update bug', life: 3000});
       }
     },
+    fetchListData() {
+      const { page = 1, sort, search } = this.$route.query;
+      this.currentPage = parseInt(page);
+      this.sortOrder = sort;
+      this.searchterm = search;
+      this.fetchBugs();
+    },
     async fetchBugs() {
       try {
-        const response = await BugsServices.getBugsByProjectId(
+        let response
+        if(this.searchterm){
+          response = await BugsServices.getBugsByProjectId(
           this.projectId,
           this.currentPage,
           this.perPage,
           this.sortOrder,
-          this.searchterm // Pass the search term
+          this.searchterm
+          
         );
-
+        }else{
+          response = await BugsServices.getBugsByProjectId(
+          this.projectId,
+          this.currentPage,
+          this.perPage,
+          this.sortOrder)
+        }
         if (response.data && response.data.length > 0) {
-          console.log("Bugs Coming from API: ", response.data);
           this.bugs = response.data;
           this.totalItemsCount = response.totalItems;
+
           this.errorMessage = "";
         } else {
           this.errorMessage = response.message || "No Matching Bugs Found";
@@ -188,17 +198,18 @@ export default {
         this.bugs = [];
       }
     },
+    onPageChange(event) {
+      this.updateUrlParams({ page: event.page + 1 });
+      this.fetchBugs()
+    }
   },
   mounted() {
     this.fetchBugs();
-    console.log(this.searchterm);
   },
   created() {
-    console.log("Project ID inside the BugGrid: ", this.projectId);
   },
 };
 </script>
-
 <style scoped>
 .data-table-container {
   max-width: 90%;

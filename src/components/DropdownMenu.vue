@@ -39,7 +39,6 @@ export default {
   },
   methods: {
     updateUserType() {
-      console.log("updateUserType")
       this.$emit('update:userType', this.selectedType);
     }
   },

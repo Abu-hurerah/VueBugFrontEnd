@@ -1,7 +1,7 @@
 <template>
   <div class="projects">
     <Navigationbar></Navigationbar>
-    <BugPageheader @search-term="onSearchTerm" :projectId="projectId"></BugPageheader>
+    <BugPageheader :projectId="projectId"></BugPageheader>
     <div v-if="errorMessage" class="no-projects-message">
       <p>{{ errorMessage }}</p>
     </div>
@@ -39,7 +39,6 @@ export default {
     }
   },
   created() {
-        console.log("Bug View: ", this.projectId);
   }
 }
 </script>

@@ -65,14 +65,17 @@
 
       <!-- Right Section for Icons -->
       <div class="right-section flex items-center space-x-4">
-        <Button
-          class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
-          icon="pi pi-bars"
-        />
-        <Button
-          class="p-button-rounded p-button-text bg-white border border-gray-300 hover:shadow-md rounded-md text-gray-500"
-          icon="pi pi-sort-alt"
-        />
+        <div class="dropdown-container">
+          <Dropdown
+            v-model="sortBy"
+            :options="sortOptions"
+            placeholder="Sort by"
+            class="custom-dropdown"
+            optionLabel="label"
+            optionValue="value"
+            @change="onSortChange"
+          />
+        </div>
         <div v-if="userdata === 'MANAGER'">
           <Button class="custom-button" icon="pi pi-plus" @click="openModal">
             Assign
@@ -133,6 +136,8 @@ import Dropdown from "primevue/dropdown/Dropdown";
 import UserServices from "@/services/User/User";
 import Toast from "primevue/toast";
 import ProjectServices from "@/services/Project/Project";
+import urlParamsMixins from "@/helpers/urlParamsMixins";
+
 export default {
   components: {
     Button,
@@ -142,6 +147,7 @@ export default {
     Dropdown,
     Toast,
   },
+  mixins: [urlParamsMixins],
   props: {
     projectId: String,
   },
@@ -149,7 +155,9 @@ export default {
     this.userdata = Utilities.getuserInfo();
     this.userdata = this.userdata.toUpperCase();
     this.fetchUsers();
-    console.log("Project ID INside Header: ",this.projectId)
+    // Ensure initial values are fetched from URL if present
+    this.sortBy = this.$route.query.sort || null;
+    this.searchTerm = this.$route.query.search || '';
   },
   data() {
     return {
@@ -162,6 +170,10 @@ export default {
       userOptionsDev: [],
       qa_assign: "",
       dev_assign: "",
+      sortOptions: [
+        { label: "A-Z", value: "ASC" },
+        { label: "Z-A", value: "DESC" },
+      ],
     };
   },
   methods: {
@@ -191,10 +203,12 @@ export default {
       }
     },
     emitSearchTerm() {
-      this.$emit("search-term", this.searchTerm);
+      this.updateUrlParams({ search: this.searchTerm  || undefined});
+    },
+    onSortChange() {
+      this.updateUrlParams({ sort: this.sortBy});
     },
     openModal() {
-      console.log("Open Modal");
       this.displayModal = true;
     },
     async submitAssignment() {
@@ -218,7 +232,7 @@ export default {
           project_id: this.projectId,
           user_id: this.qa_assign,
         };
-        console.log("API REQUEST PUSH ASSIGN")
+        this.qa_assign = '';
         apiRequests.push(ProjectServices.AssignQA_Dev(qaAssignmentData));
       }
 
@@ -228,13 +242,13 @@ export default {
           project_id: this.projectId,
           user_id: this.dev_assign,
         };
+        this.dev_assign = '';
         apiRequests.push(ProjectServices.AssignQA_Dev(devAssignmentData));
       }
 
       // Execute all API requests in parallel
       try {
         await Promise.all(apiRequests);
-        console.log("Users assigned successfully");
         this.$toast.add({
           severity: "success",
           summary: "Success",

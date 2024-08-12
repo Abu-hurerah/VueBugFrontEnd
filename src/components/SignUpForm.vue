@@ -82,13 +82,12 @@ export default {
     async handleSubmit() {
       if (this.validateInputs()) {
         try {
-          const response = await UserServices.createUser(
+          await UserServices.createUser(
             this.name,
             this.userType,
             this.email,
             this.password
           );
-          console.log(response)
           this.$toast.add({ severity: 'success', summary: 'Success', detail: 'Signup successful!', life: 2000 });
           this.successMessage = "Signup successful!";
           this.error = "";

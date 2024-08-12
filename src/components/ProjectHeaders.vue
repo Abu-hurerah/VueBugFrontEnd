@@ -91,7 +91,6 @@ export default {
       this.$emit("sort-by", this.sortBy);
     },
     onFilterChange() {
-      console.log("Filtering projects:", this.projectFilter);
     },
     refreshProjects() {
 

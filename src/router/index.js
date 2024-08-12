@@ -37,7 +37,7 @@ const router = new Router({
     },
     {
       path: '*',
-      component: () => import('../views/NotFoundView.vue') // 404 Not Found Page
+      component: () => import('../views/NotFoundView.vue') 
     }
   ]
 });

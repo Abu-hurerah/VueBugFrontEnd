@@ -34,7 +34,6 @@ export default {
   },
   methods: {
     navigateToSignup(userType) {
-      console.log("USER TYPE: ", userType);
       this.$router.push({ name: "signup", query: { userType } });
     },
   },
